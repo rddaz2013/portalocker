@@ -20,7 +20,7 @@ if os.name == 'nt':  # pragma: no cover
 
         # windows locks byte ranges, so make sure to lock from file start
         try:
-            savepos = file_.tell()
+            savepos = 0
             if savepos:
                 # [ ] test exclusive lock fails on seek here
                 # [ ] test if shared lock passes this point
@@ -44,7 +44,7 @@ if os.name == 'nt':  # pragma: no cover
 
     def unlock(file_):
         try:
-            savepos = file_.tell()
+            savepos = 0
             if savepos:
                 file_.seek(0)
             try:
