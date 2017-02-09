@@ -7,6 +7,8 @@ from . import exceptions
 from . import constants
 from . import portalocker
 
+current_time = getattr(time, "monotonic", time.time)
+
 DEFAULT_TIMEOUT = 5
 DEFAULT_CHECK_INTERVAL = 0.25
 LOCK_METHOD = constants.LOCK_EX | constants.LOCK_NB
@@ -23,18 +25,14 @@ def open_atomic(filename, binary=True):
     you to write the entire file and move it to the actual location. Note that
     this makes the assumption that a rename is atomic on your platform which
     is generally the case but not a guarantee.
-
     http://docs.python.org/library/os.html#os.rename
-
     >>> filename = 'test_file.txt'
     >>> if os.path.exists(filename):
     ...     os.remove(filename)
-
     >>> with open_atomic(filename) as fh:
     ...     written = fh.write(b'test')
     >>> assert os.path.exists(filename)
     >>> os.remove(filename)
-
     '''
     assert not os.path.exists(filename), '%r exists' % filename
     path, name = os.path.split(filename)
@@ -68,7 +66,6 @@ class Lock(object):
             check_interval=DEFAULT_CHECK_INTERVAL, fail_when_locked=False,
             flags=LOCK_METHOD):
         '''Lock manager with build-in timeout
-
         filename -- filename
         mode -- the open mode, 'a' or 'ab' should be used for writing
         truncate -- use truncate to emulate 'w' mode, None is disabled, 0 is
@@ -77,11 +74,9 @@ class Lock(object):
         check_interval -- check interval while waiting
         fail_when_locked -- after the initial lock failed, return an error
             or lock the file
-
         fail_when_locked is useful when multiple threads/processes can race
         when creating a file. If set to true than the system will wait till
         the lock was acquired and then return an AlreadyLocked exception.
-
         Note that the file is opened first and locked later. So using 'w' as
         mode will result in truncate _BEFORE_ the lock is checked.
         '''
@@ -126,11 +121,11 @@ class Lock(object):
             # Try to lock
             fh = self._get_lock(fh)
         except exceptions.LockException as exception:
-            # Try till the timeout is 0
-            while timeout > 0:
+            # Try till the timeout has passed
+            timeoutend = current_time() + timeout
+            while timeoutend > current_time():
                 # Wait a bit
                 time.sleep(check_interval)
-                timeout -= check_interval
 
                 # Try again
                 try:
@@ -171,7 +166,6 @@ class Lock(object):
     def _get_lock(self, fh):
         '''
         Try to lock the given filehandle
-
         returns LockException if it fails'''
         portalocker.lock(fh, self.flags)
         return fh
@@ -179,7 +173,6 @@ class Lock(object):
     def _prepare_fh(self, fh):
         '''
         Prepare the filehandle for usage
-
         If truncate is a number, the file will be truncated to that amount of
         bytes
         '''
