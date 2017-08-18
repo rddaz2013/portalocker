@@ -23,7 +23,7 @@ if os.name == 'nt':  # pragma: no cover
 
         # windows locks byte ranges, so make sure to lock from file start
         try:
-            savepos = file_.tell()
+            savepos = 0
             file_.seek(0, os.SEEK_END)
             if file_.tell() > 0x7fffffff:
                 raise exceptions.FileToLarge("Files larger than 2GB "
@@ -54,7 +54,7 @@ if os.name == 'nt':  # pragma: no cover
 
     def unlock(file_):
         try:
-            savepos = file_.tell()
+            savepos = 0
             if savepos:
                 file_.seek(0)
             try:
