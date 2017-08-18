@@ -11,7 +11,7 @@ if os.name == 'nt':  # pragma: no cover
             if flags & constants.LOCK_NB:
                 mode = msvcrt.LK_NBRLCK
             else:
-                if hasattr(msvcrt, 'LK.RLOCK'):
+                if hasattr(msvcrt, 'LK_RLOCK'):
                     mode = msvcrt.LK_RLOCK
                 else:
                     mode = msvcrt.LK_RLCK
