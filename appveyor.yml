@@ -11,4 +11,4 @@ test_script:
           py35,
           py36
     '
-  - C:\Python35\python -m tox -e "%TESTENVS%"
+  - C:\Python36\python -m tox -e "%TESTENVS%"
